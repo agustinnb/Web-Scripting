@@ -1,0 +1,11 @@
+@charset "utf-8";
+/* CSS Document */
+
+@font-face {
+ 			   font-family: 'poor_richardregular';
+    		   src: url('http://www.agustinbottos.com.ar/cumples/font/poorich-webfont.woff2') format('woff2'),
+         		url('http://www.agustinbottos.com.ar/cumples/font/poorich-webfont.woff') format('woff');
+    			font-weight: normal;
+    			font-style: normal;
+
+			}      

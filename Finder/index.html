@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    
+    <style>
+      body {font-family: Arial, Helvetica, sans-serif;
+            font-size: 20px;
+            text-align:center;
+            max-width:100%;
+            width:100%;
+            margin-left:auto;
+            margin-right:auto;
+            }
+      select {
+        font-family: Arial, Helvetica, sans-serif;
+            font-size: 20px;
+            text-align:center;
+      }
+    table{
+      width: 80%;
+      max-width: 80% !important;
+      font-size:0.7vw !important;
+      white-space: nowrap;
+    }
+    table td{
+      width:9%;
+      max-width:9%;
+    }
+      button {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 20px;
+      }
+      table{
+        font-size: 15px;
+        text-align:center;
+        width:70%;
+        max-width:70%;
+      }
+      thead{
+        font-weight:bold;
+      }
+      tr:nth-child(even){background-color: #f2f2f2;}
+
+      tr:hover {background-color: #ddd;}
+      th{
+          background-color: #0f2b48;
+          color: white;
+      }
+      #data{
+        text-align:center;
+      }
+
+/* LOADER */
+.loader,
+.loader:before,
+.loader:after {
+  border-radius: 10%;
+}
+.loader {
+  color: #ffffff;
+  font-size: 11px;
+  text-indent: -99999em;
+  margin: 55px auto;
+  position: relative;
+  width: 10em;
+  height: 10em;
+  box-shadow: inset 0 0 0 1em;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.loader:before,
+.loader:after {
+  position: absolute;
+  content: '';
+}
+.loader:before {
+  width: 5.2em;
+  height: 10.2em;
+  background: #0dc5c1;
+  border-radius: 10.2em 0 0 10.2em;
+  top: -0.1em;
+  left: -0.1em;
+  -webkit-transform-origin: 5.1em 5.1em;
+  transform-origin: 5.1em 5.1em;
+  -webkit-animation: load2 2s infinite ease 1.5s;
+  animation: load2 2s infinite ease 1.5s;
+}
+.loader:after {
+  width: 5.2em;
+  height: 10.2em;
+  background: #0dc5c1;
+  border-radius: 0 10.2em 10.2em 0;
+  top: -0.1em;
+  left: 4.9em;
+  -webkit-transform-origin: 0.1em 5.1em;
+  transform-origin: 0.1em 5.1em;
+  -webkit-animation: load2 2s infinite ease;
+  animation: load2 2s infinite ease;
+}
+@-webkit-keyframes load2 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes load2 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+
+/* FIN LOADER */
+
+
+
+
+
+</style>
+ <script
+src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+</script>
+<script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
+
+
+
+<script>
+
+var gAlldata; /* ESTA VARIABLE ES LA QUE VA A CONTENER LOS VALORES QUE DEVUELVA EL SPREADSHEET */
+var gTerri= []; /* ESTA VARIABLE VA A TENER LOS TERRITORIOS QUE ESTEN EN EL SPREADSHEET - Si devuelve mal chequear columna en codigo.gs */
+var gSucu= []; /* ESTA VARIABLE VA A TENER LAS SUCURSALES QUE ESTEN EN EL SPREADSHEET - Si devuelve mal, chequear columna en codigo.gs */
+var gTipoCliente= []; /* ESTA VARIABLE VA A TENER LOS TIPOS DE CLIENTES QUE ESTEN EN EL SPREADSHEET - Si devuelve mal, chequear columna en codigo.gs */
+var TodosLosDatos = [];
+
+// The code in this function runs when the page is loaded.
+$(function() {
+  google.script.run.withSuccessHandler(AllData)
+      .getVals();
+ 
+      
+});
+
+function AllData(values) {
+  TodosLosDatos=JSON.parse(values);
+  gAlldata=TodosLosDatos[0];
+  var gTerrySucusyTP=TodosLosDatos[1];
+  gTerri=gTerrySucusyTP[0];
+  gSucu=gTerrySucusyTP[1];
+  gTipoCliente=gTerrySucusyTP[2];
+  document.getElementById('sectionmain').style.display = '';
+  document.getElementById('loader').style.display = 'none';
+  populatetipocliente(gTipoCliente);
+  populatebusqueda();
+  
+   
+}
+function populatetipocliente(tipocliente){
+   var selectBox = document.getElementById('tipo');
+    removeOptions(selectBox);
+    for(var i = 0, l = tipocliente.length; i < l; i++){
+                     $('#tipo').append(`<option value="${tipocliente[i]}">
+                                       ${tipocliente[i]}
+                                  </option>`); 
+}
+}
+
+
+function populatebusqueda(){
+  var selectBox = document.getElementById('buscar');
+  removeOptions(selectBox);
+
+                     $('#buscar').append(`<option value="${TodosLosDatos[3]}">
+                                       Territorio
+                                  </option>`); 
+                     $('#buscar').append(`<option value="${TodosLosDatos[4]}">
+                                       Sucursal
+                                  </option>`);
+
+                    /* ACÁ EMPIEZA EL FOR RARO */
+
+                    for (var x=0;x<TodosLosDatos[5].length; x++){
+                        if (TodosLosDatos[7][x]==0){
+                                  $('#buscar').append(`<option value="${TodosLosDatos[5][x]}">
+                                       ${TodosLosDatos[6][x]}
+                                  </option>`);
+                        }else{
+                          if (document.getElementById('tipo').value==TodosLosDatos[8][TodosLosDatos[8].length-1]){
+                                   $('#buscar').append(`<option value="${TodosLosDatos[5][x]}">
+                                       ${TodosLosDatos[6][x]}
+                                  </option>`);                         
+                          }      
+                        }
+
+                    }
+                    populateinselect();
+}
+
+
+function populateinselect(){
+  var quebusco=document.getElementById('buscar').value;
+  
+  if ((quebusco==TodosLosDatos[3])||(quebusco==TodosLosDatos[4])){
+    document.getElementById('clienteejec').style.display = 'none';
+    document.getElementById('sucterri').style.display = '';
+    populateterrosuc();
+  }else{
+    document.getElementById('clienteejec').style.display = '';
+    document.getElementById('sucterri').style.display = 'none';
+    document.getElementById('insearch').value='';
+  }
+}
+
+function populateterrosuc(){
+  var quepopulo=document.getElementById('buscar').value;
+    var selectBox = document.getElementById('sucterrisel');
+  removeOptions(selectBox);
+  if (quepopulo==TodosLosDatos[3]){ /*** POPULO TERRITORIOS ***/
+  var oTerri=[];
+          for (var i=1; i < gAlldata.length;i++){
+              var yaesta=false;
+              if (gAlldata[i][TodosLosDatos[2]-1]==document.getElementById('tipo').value){
+              for (var x=0;x<oTerri.length;x++){
+               if ((gAlldata[i][TodosLosDatos[3]-1])==oTerri[x]){
+                yaesta=true;
+               } }
+              if (yaesta==false){
+                oTerri.push(gAlldata[i][TodosLosDatos[3]-1]); 
+              }
+              }  
+              
+          }
+          for (var x=0;x<oTerri.length;x++){
+               $('#sucterrisel').append(`<option value="${oTerri[x]}">
+                                       ${oTerri[x]}
+                             </option>`);       
+        }
+  }
+    if (quepopulo==TodosLosDatos[4]){ /*** POPULO SUCURSALES ***/
+  var oSucu=[];
+          for (var i=1; i < gAlldata.length;i++){
+              var yaesta=false;
+              if (gAlldata[i][TodosLosDatos[2]-1]==document.getElementById('tipo').value){
+              for (var x=0;x<oSucu.length;x++){
+               if ((gAlldata[i][TodosLosDatos[4]-1])==oSucu[x]){
+                yaesta=true;
+               } }
+              if (yaesta==false){
+                oSucu.push(gAlldata[i][TodosLosDatos[4]-1]); 
+              }
+              }      
+          }
+          oSucu.sort((a, b) => a - b);
+           for (var x=0;x<oSucu.length;x++){
+               $('#sucterrisel').append(`<option value="${oSucu[x]}">
+                                       ${oSucu[x]}
+                             </option>`);       
+        }
+ 
+
+  }
+
+}
+
+
+</script>
+   <script type="text/javascript">
+ 
+        function ExportToExcel(type, fn, dl) {
+       var elt = document.getElementById('tabladatos');
+       var wb = XLSX.utils.table_to_book(elt, { sheet: "sheet1" });
+       return dl ?
+         XLSX.write(wb, { bookType: type, bookSST: true, type: 'base64' }):
+         XLSX.writeFile(wb, fn || ('Export.' + (type || 'xlsx')));
+    }
+
+ 
+
+
+function creartabla(tabla,tblBody){
+
+                      tabla.setAttribute('id','tabladatos');
+                      tabla.setAttribute('align','center');
+
+                       var buttonexport = document.createElement("button");
+                      buttonexport.setAttribute('style','font-size:10px;');
+                      buttonexport.setAttribute('onclick','ExportToExcel(\'xlsx\')');
+                      buttonexport.innerHTML="Exportar a Excel";
+
+
+                      var tblHead = document.createElement("thead");
+                       tblBody.setAttribute('id','tabladatosbody');
+                       
+
+                       var hilerahbe = document.createElement("tr");
+                       var celdahbe = document.createElement("th");
+                       celdahbe.setAttribute('colspan',gAlldata[0].length);
+                        celdahbe.setAttribute('style','text-align:right;');
+                        celdahbe.appendChild(buttonexport);
+                        hilerahbe.appendChild(celdahbe);
+                        tblHead.appendChild(hilerahbe);
+                var hilerah = document.createElement("tr");
+                for (var i=0;i<gAlldata[0].length;i++){
+                      var textoceldah = document.createTextNode(gAlldata[0][i]);
+                      var celdah = document.createElement("th");
+                      celdah.appendChild(textoceldah);
+                      hilerah.appendChild(celdah);
+                }
+                      tblHead.appendChild(hilerah);
+                      tabla.appendChild(tblHead);
+
+
+
+}
+
+
+
+function search(){
+
+  var haydatos=false;
+  var data = document.getElementById('data');
+  data.innerHTML="";
+  var error=0;
+ 
+  var tabla= document.createElement("table");
+  var tblBody= document.createElement("tbody");
+
+
+  creartabla(tabla,tblBody);
+
+  var tipocliente=document.getElementById('tipo').value; /*** QUE TIPO DE CLIENTE ES ***/
+  var buscar = document.getElementById('buscar').value; /*** QUE ESTOY BUSCANDO (Sucursal, territorio, num cliente, etc.) -- Viene por ID de columna ***/
+  var valorabuscar;
+  var buscarporcoincidencia=false;
+  if ((buscar==TodosLosDatos[3])||(buscar==TodosLosDatos[4])){
+    valorabuscar=document.getElementById('sucterrisel').value;
+  }else{
+    valorabuscar=document.getElementById('insearch').value;
+    buscarporcoincidencia=true;
+  }
+
+  for (var i=1;i<gAlldata.length;i++){
+      var devuelvo=false;
+      
+      if (gAlldata[i][TodosLosDatos[2]-1]==tipocliente){
+        if (buscarporcoincidencia==false){
+        if (gAlldata[i][buscar-1]==valorabuscar){
+          devuelvo=true;
+        }
+        }else{
+         for (var x=0;x<TodosLosDatos[5].length;x++){
+           if (buscar==TodosLosDatos[5][x]){
+             if (TodosLosDatos[9][x]==1){ /*** MATCH ****/
+             if (TodosLosDatos[5][x].length>1){
+             for (var h=0;h<TodosLosDatos[5][x].length;h++){
+              if (gAlldata[i][TodosLosDatos[5][x][h]-1].toString().toLowerCase().includes(valorabuscar.toLowerCase())) devuelvo=true; 
+             }
+             }else{
+              if (gAlldata[i][buscar-1].toString().toLowerCase().includes(valorabuscar.toLowerCase())) devuelvo=true;
+             }
+             }
+          if (TodosLosDatos[9][x]==0){ /*** EXACT MATCH ***/
+             if (TodosLosDatos[5][x].length>1){
+             for (var h=0;h<TodosLosDatos[5][x].length;h++){
+              if (gAlldata[i][TodosLosDatos[5][x][h]-1].toString().toLowerCase().equals(valorabuscar.toLowerCase())) devuelvo=true; 
+             }
+             }else{
+              if (gAlldata[i][buscar-1].toString().toLowerCase().equals(valorabuscar.toLowerCase())) devuelvo=true;
+             }
+             }
+if (TodosLosDatos[9][x]==2){ /*** MAYOR O IGUAL QUE ***/
+  try{
+             if (TodosLosDatos[5][x].length>1){
+             for (var h=0;h<TodosLosDatos[5][x].length;h++){
+              if (parseInt(gAlldata[i][TodosLosDatos[5][x][h]-1])>=parseInt(valorabuscar)) devuelvo=true; 
+             }
+             }else{
+              if (parseInt(gAlldata[i][buscar-1])>=parseInt(valorabuscar)) devuelvo=true;
+             }
+             }catch (e){
+  error=1;
+}
+}
+  if (TodosLosDatos[9][x]==3){ /*** MENOR O IGUAL QUE ***/
+   try{       
+             if (TodosLosDatos[5][x].length>1){
+             for (var h=0;h<TodosLosDatos[5][x].length;h++){
+              if (parseInt(gAlldata[i][TodosLosDatos[5][x][h]-1])<=parseInt(valorabuscar)) devuelvo=true; 
+             }
+             }else{
+              if (parseInt(gAlldata[i][buscar-1])<=parseInt(valorabuscar)) devuelvo=true;
+             }
+             }catch (e){
+  error=1;
+}
+}
+
+
+           } 
+         } 
+ 
+        }
+      
+      }
+      if (devuelvo==true){
+        var hilera = document.createElement("tr");
+          for (var x=0;x<gAlldata[i].length;x++){
+                   var celda = document.createElement("td");
+                   var textoCelda = document.createTextNode(gAlldata[i][x]);
+                   celda.appendChild(textoCelda);
+                   hilera.appendChild(celda);
+      }
+        tblBody.appendChild(hilera);
+        haydatos=true;
+      }
+
+
+
+  }
+
+  if ((haydatos==false)||(error==1)){
+              while (data.firstChild) {
+              data.removeChild(data.lastChild);
+              }
+              if (haydatos==false){
+              data.innerHTML="<br /><br /><div style='text-align:center;'>No hay datos para mostrar</div>";
+              }else{
+                data.innerHTML="<br /><br /><div style='text-align:center;'>Ocurrió un error, o la columna de la base contiene carácteres que no se pueden convertir en númericos o está intentando buscar un valor no numerico.</div>";
+              }
+        }else{
+                tabla.appendChild(tblBody);
+                 data.appendChild(tabla);
+        }
+    
+      
+
+}
+  
+
+
+function removeOptions(selectElement) {
+   var i, L = selectElement.options.length - 1;
+   for(i = L; i >= 0; i--) {
+      selectElement.remove(i);
+   }
+}
+
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+   </head>
+  <body>
+
+      <div id='loader' style='text-align:center;' class="loader">Loading...</div> 
+<section id='sectionmain' style="display:none;">
+    <p>Seleccione el tipo de cliente </p>
+    <p><select id='tipo' onchange="populatebusqueda()">
+    </select>
+    </p>
+    <p>Buscar Por:</p>
+  
+       <p style="text-align:center;">
+         <select style="text-align:center;" id='buscar' onchange="populateinselect()">
+    </select>
+    </p>
+    <p style="display:none;" id='clienteejec'><input type="text" id='insearch' /></p>
+    <p style="" id='sucterri'><select id='sucterrisel'></select></p>
+
+    </div>
+    <div style="" id="buttondiv"> <button onclick="search()">Buscar</button></div>
+    <div style="text-align:center; width:100%;" align='center'>
+      
+    <div id='data' style="text-align:center;"></div>
+    </div>
+    </section>
+  </body>
+</html>
